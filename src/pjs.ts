@@ -4,6 +4,8 @@ interface FormRawData {
     type?: string | null;
     placeholder?: string | null;
     collapse?: string | null;
+    class?: string | null;
+    id?: string | null;
 }
 
 interface PopupSettings {
@@ -113,6 +115,8 @@ class PopupForm extends PopupBase{
         let _form = document.createElement("form")
         this.formdata.forEach(inputData => {
             let _input_placeholder = document.createElement("div")
+            if(inputData.class) _input_placeholder.classList.add(inputData.class)
+            if(inputData.id) _input_placeholder.id = inputData.id
             if(inputData.label){
                 let _input_label = document.createElement("label")
                 _input_label.setAttribute("for", inputData.name)
