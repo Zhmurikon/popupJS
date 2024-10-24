@@ -1,0 +1,45 @@
+
+.pjs-popup_wrapper{
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    z-index: 999;
+}
+.pjs-popup_wrapper.active{
+    display: flex;
+}
+
+.pjs-popup_container{
+    background-color: #fff;
+    max-width: 90%;
+    max-height: 90%;
+    position: relative;
+    padding: 30px;
+    width: 240px;
+    min-height: 100px;
+}
+.pjs-popup_content{
+    overflow-y: auto;
+    height: auto;
+    min-height: 40px;
+}
+.pjs-popup_close_icon{
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 24px;
+    height: 24px;
+    fill: #000000;
+}
+.pjs-popup_close_zone{
+    background: rgba(0, 0, 0, 0.6);
+    z-index: -1;
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+}
