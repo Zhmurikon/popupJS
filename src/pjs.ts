@@ -11,7 +11,14 @@ interface FormRawData {
 interface PopupSettings {
     id?: string;
     css?: string | null;
+    class?: Array<string> | null;
     formdata?: Array<FormRawData> | null;
+    title?: string | null;
+    description?: string | null;
+    buttontext?: string | null;
+    usepolicy?: boolean | null;
+    policytext?: string | null;
+    policyhref?: string | null;
 }
 
 const CloseIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g><path d="M18.717 6.697l-1.414-1.414-5.303 5.303-5.303-5.303-1.414 1.414 5.303 5.303-5.303 5.303 1.414 1.414 5.303-5.303 5.303 5.303 1.414-1.414-5.303-5.303z" /></g></svg>`
@@ -51,12 +58,14 @@ function openPopupByID(event: Event){
 class PopupBase{
     name: string;
     id: string;
+    class: Array<string>;
     html: string | null;
     contentElement: HTMLDivElement;
     constructor(name: string, settings: PopupSettings = {}){
         this.name = name;
         this.id = settings.id || "pjs-popup_" + name;
-        this.buildHtmlBase()
+        this.class = settings.class || [];
+        this.buildHtmlBase();
     }
     buildHtmlBase(){
         let _wrapper: HTMLDivElement = document.createElement("div")
@@ -64,9 +73,12 @@ class PopupBase{
         _wrapper.id = this.id;
         let _container = document.createElement("div");
         let _close_zone = document.createElement("div");
-        _close_zone.classList.add("pjs-popup_close_zone") ;
-        _close_zone.addEventListener("click", closeOpenedPopup)
+        _close_zone.classList.add("pjs-popup_close_zone");
+        _close_zone.addEventListener("click", closeOpenedPopup);
         _container.classList.add("pjs-popup_container") ;
+        this.class.forEach(cl => {
+            _container.classList.add(cl)
+        });
         _wrapper.appendChild(_container);
         _wrapper.appendChild(_close_zone);
         let _content = document.createElement("div");
@@ -85,10 +97,10 @@ class PopupBase{
         this.contentElement = _content;
     }
     linkPopup(){
-        let _links = document.querySelectorAll('[href="#'+this.id+'"]')
+        let _links = document.querySelectorAll('[href="#'+this.id+'"]');
         for (let i = 0; i < _links.length; i++) {
             const _link = _links[i];
-            _link.addEventListener("click", openPopupByID)
+            _link.addEventListener("click", openPopupByID);
         }
     }
 }
@@ -101,38 +113,66 @@ class PopupSuccess extends PopupBase{
 
 class PopupForm extends PopupBase{
     formdata: Array<FormRawData>
+    buttontext: string;
+    usepolicy: boolean;
+    policytext: string;
+    policyhref: string;
     constructor(name: string, settings: PopupSettings = {}){
+        if(settings.class){
+            settings.class.push("pjs-form_popup");
+        }else{
+            settings.class = ["pjs-form_popup"];
+        }
         super(name, settings);
         if(settings.formdata){
-            this.formdata = settings.formdata
+            this.formdata = settings.formdata;
         }else{
             throw new Error('add form data');
         }
-        this.buildForm()
+        // if(settings.buttontext) this.buttontext = settings.buttontext
+        this.buttontext = settings.buttontext || "Отправить";
+        this.usepolicy = settings.usepolicy ? true : false;
+        this.policytext = settings.policytext || "Нажимая кнопку отправить вы соглашаетесь с политокой кондифициальности";
+        this.policyhref = settings.policyhref || "/policy";
+        this.buildForm();
     }
     buildForm(){
-        console.log("buildForm")
-        let _form = document.createElement("form")
+        console.log("buildForm");
+        let _form = document.createElement("form");
         this.formdata.forEach(inputData => {
-            let _input_placeholder = document.createElement("div")
-            if(inputData.class) _input_placeholder.classList.add(inputData.class)
-            if(inputData.id) _input_placeholder.id = inputData.id
+            let _input_placeholder = document.createElement("div");
+            if(inputData.class) _input_placeholder.classList.add(inputData.class);
+            if(inputData.id) _input_placeholder.id = inputData.id;
             if(inputData.label){
-                let _input_label = document.createElement("label")
-                _input_label.setAttribute("for", inputData.name)
-                _input_label.innerText = inputData.label
-                _input_placeholder.appendChild(_input_label)
+                let _input_label = document.createElement("label");
+                _input_label.setAttribute("for", inputData.name);
+                _input_label.innerText = inputData.label;
+                _input_placeholder.appendChild(_input_label);
             }
-            let _input = document.createElement("input")
-            _input.name = inputData.name
-            if(inputData.type) _input.type = inputData.type
-            if(inputData.placeholder) _input.placeholder = inputData.placeholder
+            let _input = document.createElement("input");
+            _input.name = inputData.name;
+            if(inputData.type) _input.type = inputData.type;
+            if(inputData.placeholder) _input.placeholder = inputData.placeholder;
 
-            _input_placeholder.appendChild(_input)
+            _input_placeholder.appendChild(_input);
 
-            _form.appendChild(_input_placeholder)
+            _form.appendChild(_input_placeholder);
         });
-        this.contentElement.appendChild(_form)
+
+        let _button = document.createElement("button");
+        _button.classList.add("pjs-form_button");
+        _button.innerText = this.buttontext;
+        _form.appendChild(_button);
+
+        if(this.usepolicy){
+            let _policy = document.createElement("a");
+            _policy.innerHTML = this.policytext;
+            _policy.href = this.policyhref;
+            _policy.classList.add("pjs-popup_policy");
+            _form.appendChild(_policy);
+        }
+
+        this.contentElement.appendChild(_form);
     }
 }
 
@@ -142,6 +182,7 @@ window.addEventListener("load", (event) => {
     let _popup2 = new PopupForm(
         "test",
         {
+            usepolicy: true,
             formdata:[
                 {
                     name: 'testinput',
